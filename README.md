@@ -35,7 +35,8 @@ This project deploys a Text Recognition service using AWS Lambda. The service ac
 
 Create separate tesseract Lambda layer for performing OCR from the below link
    ```bash 
-   github.com/bweigel/aws-lambda-tesseract-layer```
+   github.com/bweigel/aws-lambda-tesseract-layer
+   ```
 
    
 To test the functionality use the invoke_script.py in the scripts folder
