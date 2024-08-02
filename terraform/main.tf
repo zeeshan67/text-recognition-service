@@ -53,8 +53,8 @@ resource "aws_lambda_layer_version" "tesseract_layer" {
     "python3.11",
   ]
 
-  filename = "${path.module}/tesseract/tesseract_layer.zip"
-  source_code_hash = filebase64sha256("${path.module}/tesseract/tesseract_layer.zip")
+  filename = "${path.module}/../tesseract/tesseract_layer.zip"
+  source_code_hash = filebase64sha256("${path.module}/../tesseract/tesseract_layer.zip")
 }
 
 resource "aws_lambda_function" "gateway_handler" {
