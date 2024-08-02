@@ -44,6 +44,19 @@ resource "aws_s3_object" "lambda_text_recognition" {
   etag   = filemd5(data.archive_file.lambda_text_recognition.output_path)
 }
 
+resource "aws_lambda_layer_version" "tesseract_layer" {
+  layer_name          = "TesseractLayer"
+  compatible_runtimes = [
+    "python3.8",
+    "python3.9",
+    "python3.10",
+    "python3.11",
+  ]
+
+  filename = "${path.module}/tesseract/tesseract_layer.zip"
+  source_code_hash = filebase64sha256("${path.module}/tesseract/tesseract_layer.zip")
+}
+
 resource "aws_lambda_function" "gateway_handler" {
   function_name = "GatewayLambda"
   description   = "Acts as a proxy, invokes text recognition lambda by passing base64 image and returning text response."
@@ -64,6 +77,9 @@ resource "aws_lambda_function" "text_recognition_handler" {
   handler       = "text_recognition.handler"
   source_code_hash = data.archive_file.lambda_text_recognition.output_base64sha256
   role          = aws_iam_role.lambda_exec.arn
+  layers = [
+    aws_lambda_layer_version.tesseract_layer.arn
+  ]
 }
 
 resource "aws_lambda_permission" "allow_gateway_to_invoke_text_recognition" {

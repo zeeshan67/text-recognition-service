@@ -1,3 +1,4 @@
-boto3
-pytesseract
-Pillow
+-i https://pypi.org/simple
+pillow==10.4.0; python_version >= '3.8'
+pytesseract==0.3.10; python_version >= '3.7'
+boto3==1.34.145; python_version >= '3.8'
