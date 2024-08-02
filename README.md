@@ -29,7 +29,7 @@ This project deploys a Text Recognition service using AWS Lambda. The service ac
    
     # Tesseract OCR AWS Lambda Layer
 
-   This repository provides instructions for creating an AWS Lambda layer with Tesseract OCR, enabling the use of Tesseract in your Lambda functions.
+   This instructions are for creating an AWS Lambda layer with Tesseract OCR, enabling the use of Tesseract in your Lambda functions.
    
    ## Prerequisites
    
@@ -65,7 +65,7 @@ This project deploys a Text Recognition service using AWS Lambda. The service ac
       ENTRYPOINT ["/opt/bin/tesseract"]
 
    3. **Build the docker image** 
-      docker build -t tesseract-x86 .
+      docker build -t tesseract .
 
    4. **Create a Container from the Image** 
       docker run --name tesseract-container -d tesseract
