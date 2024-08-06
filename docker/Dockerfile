@@ -8,39 +8,30 @@ ARG TMP_BUILD=/tmp
 ARG TESSERACT=/opt/tesseract
 ARG LEPTONICA=/opt/leptonica
 ARG DIST=/opt/build-dist
-# change OCR_LANG to enable the layer for different languages
 ARG OCR_LANG=deu
-# change TESSERACT_DATA_SUFFIX to use different datafiles (options: "_best", "_fast" and "")
 ARG TESSERACT_DATA_SUFFIX=_fast
 ARG TESSERACT_DATA_VERSION=4.1.0
-ARG COMPILER_OPTIONS='CXXFLAGS=-mavx2'
 
 # Install essential development tools and libraries
-RUN yum makecache fast; \
-    yum clean all && yum -y update && yum -y upgrade; \
-    yum clean all && yum -y install yum-plugin-ovl; \
-    yum clean all && yum -y groupinstall "Development Tools"; \
+RUN yum makecache fast && \
+    yum clean all && yum -y update && yum -y upgrade && \
+    yum clean all && yum -y install yum-plugin-ovl && \
+    yum clean all && yum -y groupinstall "Development Tools" && \
     yum clean all && yum -y install \
     gcc gcc-c++ make autoconf automake libtool \
     libjpeg-devel libpng-devel libtiff-devel zlib-devel \
     libzip-devel freetype-devel lcms2-devel libwebp-devel \
     libicu-devel tcl-devel tk-devel pango-devel cairo-devel \
-    libgomp; \
-    yum clean all
-
-# Test g++ installation
-RUN g++ --version
+    libgomp && yum clean all
 
 # Create directories for building
 WORKDIR ${TMP_BUILD}/leptonica-build
-RUN curl -L https://github.com/DanBloomberg/leptonica/releases/download/${LEPTONICA_VERSION}/leptonica-${LEPTONICA_VERSION}.tar.gz | tar xz && cd ${TMP_BUILD}/leptonica-build/leptonica-${LEPTONICA_VERSION} && \
+RUN curl -L https://github.com/DanBloomberg/leptonica/releases/download/${LEPTONICA_VERSION}/leptonica-${LEPTONICA_VERSION}.tar.gz | tar xz && \
+    cd ${TMP_BUILD}/leptonica-build/leptonica-${LEPTONICA_VERSION} && \
     ./configure --prefix=${LEPTONICA} && make && make install && cp -r ./src/.libs /opt/liblept
 
-# Check C++ compiler functionality
-RUN echo 'int main() { return 0; }' > test.cpp && \
-    g++ test.cpp -o test && \
-    ./test && \
-    rm test.cpp test
+# Set PKG_CONFIG_PATH for Leptonica
+ENV PKG_CONFIG_PATH=${LEPTONICA}/lib/pkgconfig:$PKG_CONFIG_PATH
 
 # Configure library paths
 RUN echo "/opt/leptonica/lib" > /etc/ld.so.conf.d/leptonica.conf && /usr/sbin/ldconfig
@@ -54,9 +45,8 @@ RUN curl -L https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-${AUTOCONF
 WORKDIR ${TMP_BUILD}/tesseract-build
 RUN curl -L https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz | tar xz && \
     cd tesseract-${TESSERACT_VERSION} && ./autogen.sh && \
-    PKG_CONFIG_PATH=/opt/leptonica/lib/pkgconfig LIBLEPT_HEADERSDIR=/opt/leptonica/include \
-    ./configure --prefix=${TESSERACT} --with-extra-includes=/opt/leptonica/include --with-extra-libraries=/opt/leptonica/lib ${COMPILER_OPTIONS} && \
-    make CXX=/usr/local/bin/g++ && make install
+    ./configure --prefix=${TESSERACT} --with-extra-includes=/opt/leptonica/include --with-extra-libraries=/opt/leptonica/lib && \
+    make && make install
 
 # Prepare the output
 WORKDIR /opt
